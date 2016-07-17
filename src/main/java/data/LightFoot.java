@@ -5,7 +5,5 @@ package data;
  */
 public class LightFoot {
 
-    public LightFoot(String dataKey){
 
-    }
 }

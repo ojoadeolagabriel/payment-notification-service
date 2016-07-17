@@ -13,6 +13,8 @@
 		http://www.springframework.org/schema/task
         http://www.springframework.org/schema/task/spring-task-3.2.xsd">
 
-    <bean id="paymentData" class="data.PaymentNotification"/>
+    <bean id="paymentData" class="data.PaymentNotification">
+        <property name="cardPan" value="62805100000011219"/>
+    </bean>
 
 </beans>
