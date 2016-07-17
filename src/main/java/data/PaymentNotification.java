@@ -1,10 +1,7 @@
-package payment;
+package data;
 
 import org.joda.time.DateTime;
 
-/**
- * Created by Adeola.Ojo on 7/16/2016.
- */
 public class PaymentNotification {
 
     private long paymentLogId;

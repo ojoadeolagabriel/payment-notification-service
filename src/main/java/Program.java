@@ -1,16 +1,22 @@
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import data.PaymentNotification;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-/**
- * Created by Adeola.Ojo on 7/16/2016.
- */
-@SpringBootApplication
-@EnableScheduling
 public class Program {
 
+    static Logger logger = Logger.getLogger(Program.class);
     public static void main(String[] args) {
-        SpringApplication.run(Program.class);
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/job/job-report.xml");
+
+        try {
+            if (context.getBean("paymentData") instanceof PaymentNotification) {
+                logger.debug(String.format("paymentData found"));
+            }
+        } catch (NoSuchBeanDefinitionException exc) {
+            logger.error("no such bean deola");
+        }
     }
 
 }
