@@ -13,16 +13,6 @@
 		http://www.springframework.org/schema/task
         http://www.springframework.org/schema/task/spring-task-3.2.xsd">
 
-    <bean id="jobRepository"
-          class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean">
-        <property name="transactionManager" ref="transactionManager"/>
-    </bean>
-
-    <bean id="transactionManager" class="org.springframework.batch.support.transaction.ResourcelessTransactionManager"/>
-
-    <!-- job context -->
-    <bean id="jobLauncher" class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
-        <property name="jobRepository" ref="jobRepository"/>
-    </bean>
+    <bean id="paymentData" class="data.PaymentNotification"/>
 
 </beans>
