@@ -1,16 +1,18 @@
 package data;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Adeola.Ojo on 7/17/2016.
  */
 public class DaoUtil {
 
-    //my connection
+    private static String dbUsername;
+    private static String dbPassword;
+    private static final String uspGetAutogateProcessors = "{call uspGetAutogateProcessors()}";
     private static Connection mysqlConnection;
 
     /**
@@ -21,6 +23,7 @@ public class DaoUtil {
      * @throws SQLException
      */
     private static Connection getMySqlConnection() throws ClassNotFoundException, SQLException {
+
         if (mysqlConnection == null) {
             Class.forName("com.mysql.jdbc.Driver");
             mysqlConnection = DriverManager.getConnection("jdbc:mysql://localhost:3306/uat_autopay", "root", "root");
@@ -28,9 +31,35 @@ public class DaoUtil {
         return mysqlConnection;
     }
 
-    public static List<AutogateProcessor> getAutogateProcessors() throws SQLException, ClassNotFoundException {
+    /**
+     * get Autogate Processors
+     *
+     * @param props
+     * @return
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     */
+    public static List<AutogateProcessor> getAutogateProcessors(Map<String, String> props) throws SQLException, ClassNotFoundException {
+
         Connection conn = getMySqlConnection();
-        return null;
+        CallableStatement query = conn.prepareCall(uspGetAutogateProcessors);
+        ResultSet result = query.executeQuery();
+        List<AutogateProcessor> processorList = new ArrayList<AutogateProcessor>();
+
+        while (result.next()) {
+            try {
+                AutogateProcessor proc = new AutogateProcessor();
+                proc.setId(result.getInt("id"));
+                proc.setBankId(result.getInt("bankid"));
+                proc.setDescription(result.getString("description"));
+                proc.setSpeed(result.getInt("speed"));
+                proc.setStp(result.getBoolean("isstp"));
+                processorList.add(proc);
+            } catch (Exception exc) {
+
+            }
+        }
+        return processorList;
     }
 
 }
