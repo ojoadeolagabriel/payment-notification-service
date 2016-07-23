@@ -2,46 +2,34 @@ package util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.jetty.http.MimeTypes;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.DefaultServlet;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-
+import org.mortbay.jetty.handler.*;
+import org.mortbay.jetty.Server;
 import javax.servlet.*;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-/**
- * Created by Adeola.Ojo on 7/19/2016.
- */
 public class TestWebServer {
 
     public static void init() throws Exception {
 
-        Server server = new Server(7056);
-        ServerConnector serverConnector = server.getBean(ServerConnector.class);
-        HttpConfiguration configuration = serverConnector.getBean(HttpConnectionFactory.class).getHttpConfiguration();
-        configuration.setSendDateHeader(true);
-        configuration.setSendServerVersion(true);
+        Server server = new Server(7039);
 
-        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SECURITY | ServletContextHandler.NO_SESSIONS);
-        context.setContextPath("/");
+        ContextHandler context = new ContextHandler();
+        context.setContextPath("/hello");
+        context.setResourceBase(".");
+        context.setClassLoader(Thread.currentThread().getContextClassLoader());
         server.setHandler(context);
-
-        context.addServlet(DefaultServlet.class, "/");
-        context.addServlet(JsonServlet.class, "/json");
-        context.addServlet(PlainTextServlet.class, "/plain");
+        context.setHandler(new JsonServlet());
 
         server.start();
         server.join();
     }
 
-    public class AuthResponse {
+    public static class AuthResponse {
         private String responseCode;
 
         public String getResponseCode() {
@@ -63,31 +51,60 @@ public class TestWebServer {
         private String responseMessage;
     }
 
-    public class JsonServlet extends HttpServlet {
+    /**
+     * JsonServlet
+     */
+    public static class JsonServlet extends AbstractHandler {
 
-        public void service(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException {
-
+        @Override
+        public void handle(String s, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, int i)
+                throws IOException, ServletException {
             ObjectMapper mapper = new ObjectMapper();
             AuthResponse resp = new AuthResponse();
             resp.setResponseCode("90000");
             resp.setResponseMessage("Successful");
             String jsonMsg = mapper.writeValueAsString(resp);
 
-            HttpServletResponse response = (HttpServletResponse) servletResponse;
+            HttpServletResponse response = httpServletResponse;
             response.setContentType("application/json");
             response.getOutputStream().write(jsonMsg.getBytes(StandardCharsets.ISO_8859_1));
         }
     }
 
+    /**
+     * @param request
+     * @return
+     * @throws IOException
+     */
+    public String getBody(ServletRequest request) throws IOException {
+        StringBuilder buffer = new StringBuilder();
+        BufferedReader reader = request.getReader();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            buffer.append(line);
+        }
+        String data = buffer.toString();
+        return data;
+    }
+
+    /**
+     * PlainTextServlet
+     */
     public class PlainTextServlet extends HttpServlet {
 
-        byte[] msg = "Hello, World!".getBytes(StandardCharsets.ISO_8859_1);
+        byte[] msg = "Initiating!".getBytes(StandardCharsets.ISO_8859_1);
 
         public void service(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException {
+            String payload = getBody(servletRequest);
+            if (payload != null && !payload.isEmpty()) {
+                System.out.println(payload);
+            }
+
             HttpServletResponse response = (HttpServletResponse) servletResponse;
             response.setContentType(MimeTypes.Type.TEXT_PLAIN.asString());
 
-            response.setHeader("Claim", "1");
+            response.setHeader("ProtocolCategory", "1");
+            response.setHeader("Claim-Reward", "SmsOnly");
             response.getOutputStream().write(msg);
         }
     }

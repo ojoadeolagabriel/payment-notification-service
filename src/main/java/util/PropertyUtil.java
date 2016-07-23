@@ -20,8 +20,12 @@ public class PropertyUtil {
      * @throws IOException
      */
     public String readProperty(String key) throws IOException {
-        Properties prop = new Properties();
-        prop.load(new FileInputStream(propertyPath));
-        return prop.getProperty(key);
+        try {
+            Properties prop = new Properties();
+            prop.load(new FileInputStream(propertyPath));
+            return prop.getProperty(key);
+        } catch (Exception exc) {
+            return "";
+        }
     }
 }

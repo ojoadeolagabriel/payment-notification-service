@@ -44,7 +44,7 @@ public class DaoUtil {
         Connection conn = getMySqlConnection();
         CallableStatement query = conn.prepareCall(uspGetAutogateProcessors);
         ResultSet result = query.executeQuery();
-        List<AutogateProcessor> processorList = new ArrayList<AutogateProcessor>();
+        List<AutogateProcessor> processorList = new ArrayList<>();
 
         while (result.next()) {
             try {
@@ -55,6 +55,11 @@ public class DaoUtil {
                 proc.setSpeed(result.getInt("speed"));
                 proc.setStp(result.getBoolean("isstp"));
                 processorList.add(proc);
+
+                //if first user
+                if (proc.getId() == 1) {
+                    proc.setSpeed(1000);
+                }
             } catch (Exception exc) {
 
             }
