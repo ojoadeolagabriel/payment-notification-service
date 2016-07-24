@@ -2,12 +2,17 @@ import data.AutogateProcessor;
 import data.BankHandler;
 import data.DaoUtil;
 import data.PaymentNotification;
+import network.SoapUtil;
 import network.SocketProcessor;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import util.PropertyUtil;
 import util.TestWebServer;
+import webapi.BankHealth;
+import webapi.RestApiHelper;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -25,11 +30,27 @@ public class Program {
 
     public static void main(String[] args) throws Exception {
 
+        SoapUtil.call("IBM");
+
+        String json = RestApiHelper.call("https://www.paydirectonline.com/paydirect/autopay_paydirect/autogateservice/GetSystemLog", null, "", "GET");
+        JSONArray arr = new JSONObject(json).getJSONArray("BankHealthInformation");
+        List<BankHealth.BankInformation> collBank = new ArrayList<>();
+
+        for (int i = 0; i < arr.length(); i++) {
+
+            BankHealth.BankInformation bank = new BankHealth.BankInformation();
+            bank.setBankDescription(arr.getJSONObject(i).getString("BankDescription"));
+            bank.setLastEventDescription(arr.getJSONObject(i).getString("LastEventDescription"));
+            bank.setLastEventDescription(arr.getJSONObject(i).getString("LastEventDescription"));
+            bank.setProcessorEnabled(arr.getJSONObject(i).getBoolean("IsProcessorEnabled"));
+            collBank.add(bank);
+        }
+
         int totalPermissibleConnection = 2;
         ExecutorService networkExecutorService = Executors.newFixedThreadPool(totalPermissibleConnection);
         List<FutureTask<String>> coll = new ArrayList<>();
-        List<Socket> sockColl = new ArrayList<>();
 
+        List<Socket> sockColl = new ArrayList<>();
         String message = "";
         try (ServerSocket socket = new ServerSocket(9000)) {
             while (!"STOP".equals(message) || totalPermissibleConnection > 0) {
